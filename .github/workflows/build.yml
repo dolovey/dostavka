@@ -1,0 +1,35 @@
+name: Build and Publish EXE
+
+on:
+  push:
+    branches: [ "main" ] # Сборка будет запускаться при каждом пуше в ветку main
+  workflow_dispatch: # Позволяет запускать сборку вручную с вкладки Actions
+
+jobs:
+  build:
+    runs-on: windows-latest # Используем Windows-сервер, так как WinForms требует Windows
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Укажите вашу версию .NET, например '10.0.x', если она новее
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Publish to folder
+      run: dotnet publish --configuration Release --no-build --output ./publish
+      # Флаг --output ./publish указывает, куда сложить готовые файлы
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MyWinFormsApp-EXE
+        path: ./publish # Загружаем на GitHub содержимое папки publish
